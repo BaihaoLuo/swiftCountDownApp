@@ -11,6 +11,9 @@ import UIKit
 class ViewController: UIViewController {
     @IBOutlet weak var timePicker: UIDatePicker!
     @IBOutlet weak var countDownTime: UILabel!
+    
+    var stop:Bool!;
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
@@ -23,12 +26,18 @@ class ViewController: UIViewController {
     
     @IBAction func btnCountDown(sender: AnyObject) {
         saveCurrentDate()
+        stop = false;
         NSTimer.scheduledTimerWithTimeInterval(1.0, target: self, selector: "updateTime", userInfo: nil, repeats: true)
     }
     
     func updateTime(){
-        let timeSinceNow:NSInteger = NSInteger(self.timePicker.date.timeIntervalSinceNow)
-        timeComputation(timeSinceNow)
+        if(stop != nil){
+            if(!stop){
+                let timeSinceNow:NSInteger = NSInteger(self.timePicker.date.timeIntervalSinceNow)
+                timeComputation(timeSinceNow)
+            }
+        }
+        
     
     }
     
@@ -38,8 +47,24 @@ class ViewController: UIViewController {
         if preferences.objectForKey(key) == nil{
             print("no formerDate in UserDefaults")
         }else{
-                 NSTimer.scheduledTimerWithTimeInterval(1.0, target: self, selector: "restartComputation", userInfo: nil, repeats: true)
+           
+            // set ui to 0
+            countDownTime.text = "0 days 0 hours 0 mins 0 secs"
             
+            //remove formerDate data in keychain
+            let preferences = NSUserDefaults.standardUserDefaults()
+            let key = "formerDate"
+            let value = 0.0;
+            preferences.setDouble(value, forKey: key)
+            
+            let didSave = preferences.synchronize();
+            if !didSave{
+                print("unable to save the formerDate")
+            }
+            
+            // stop update time
+            stop = true;
+
         }
     }
     
